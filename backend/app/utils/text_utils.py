@@ -10,6 +10,20 @@ _UNDERLINE_RE = re.compile(r"^[-=]{3,}\s*$")
 _SENTENCE_RE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"'(])")
 
 
+_TOKEN_RE = re.compile(r"[a-z0-9]+")
+# Very common words carry no signal for keyword search.
+STOPWORDS = frozenset(
+    "a an the and or of to in on at for from by with is are was were be been it its this that "
+    "what which who how many much do does did can".split()
+)
+
+
+def tokenize(text: str, drop_stopwords: bool = True) -> list[str]:
+    """Lower-case word tokens for keyword search ('T20' -> 't20', punctuation dropped)."""
+    tokens = _TOKEN_RE.findall(text.lower())
+    return [t for t in tokens if t not in STOPWORDS] if drop_stopwords else tokens
+
+
 def clean_text(text: str) -> str:
     """Normalise whitespace: unify newlines, drop trailing spaces, collapse blank runs."""
     text = text.replace("\r\n", "\n").replace("\r", "\n").replace(" ", " ")
