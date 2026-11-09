@@ -1,0 +1,117 @@
+Cricket: Formats, Laws and Terminology
+======================================
+A plain-language reference to the formats, the main laws and the vocabulary of cricket.
+
+1. The game in brief
+--------------------
+
+Cricket is a bat and ball game played between two teams of 11 players. One team bats and tries to score runs, while the other team bowls and fields and tries to dismiss the batters. Each team's turn to bat is called an innings. The team with more runs at the end of the match wins, unless the match is tied or drawn.
+
+Two batters are at the crease at any time. The striker faces the ball and the non-striker waits at the other end of the pitch. An innings ends when 10 batters are out, when the allowed number of overs has been bowled, or when the batting captain declares, which is possible only in multi-day matches.
+
+2. The ground and equipment
+---------------------------
+
+The pitch is the strip in the middle of the ground. The distance between the two sets of stumps is 22 yards, which is 20.12 metres. Each set has three stumps that stand 28 inches (71.1 cm) above the ground and are 9 inches (22.86 cm) wide in total, with two bails resting on top. The batter is safe when the bat or body is grounded behind the popping crease, which is marked 4 feet (1.22 m) in front of the stumps.
+
+The bat may be at most 38 inches (96.5 cm) long and 4.25 inches (10.8 cm) wide. The ball is made of cork and leather and weighs between 155.9 and 163 grams, with a circumference between 22.4 and 22.9 centimetres. It is red in Test cricket, white in most limited-overs cricket, and pink in day-night Test matches.
+
+A boundary rope marks the edge of the playing area. A circle drawn 30 yards (about 27.4 metres) from the stumps is used to apply fielding restrictions in limited-overs matches.
+
+3. Match formats
+----------------
+
+The main formats differ in how long they last and how many overs each team gets. Each entry below gives the overs per innings, the number of innings per side, the typical length of a match and the ball colour.
+
+Test cricket | overs per innings: no limit | innings per side: 2 | length: up to 5 days, with at least 90 overs scheduled each day | ball: red, or pink for day-night Tests.
+
+One Day International (ODI) | overs per innings: 50 | innings per side: 1 | length: about 7 to 8 hours | ball: white.
+
+Twenty20 (T20) | overs per innings: 20 | innings per side: 1 | length: about 3 hours | ball: white.
+
+The Hundred | 100 balls per innings | innings per side: 1 | length: about 2.5 hours | ball: white.
+
+T10 | overs per innings: 10 | innings per side: 1 | length: about 90 minutes | ball: white.
+
+In a Test match a team wins only if it bowls the other side out twice. If time runs out first, the match is a draw. In limited-overs matches the team that scores more runs wins, and a match with equal scores is a tie.
+
+4. Overs, bowling and extras
+----------------------------
+
+An over is six legal deliveries bowled by one bowler from one end. The next over is bowled from the other end by a different bowler, and no bowler may bowl two overs in a row. In limited-overs cricket each bowler has a quota: at most 10 overs in an ODI and at most 4 overs in a T20 innings. There is no quota in Test cricket.
+
+A delivery that is not legal does not count as one of the six and is re-bowled. A wide is a ball bowled too far from the batter to be hit, and it gives the batting side one extra run. A no-ball, for example when the bowler oversteps the crease, also gives one extra run. After a front-foot no-ball in limited-overs cricket the next delivery is a free hit, on which the batter can be dismissed only in a few ways such as being run out.
+
+Byes are runs scored when the ball passes the batter and the wicketkeeper without touching the bat. Leg byes are runs scored when the ball hits the batter's body and not the bat. Both are added to the team total and not to the batter's score. Penalty runs of 5 are awarded for certain breaches, such as the ball hitting a helmet left on the field.
+
+5. Ways of getting out
+----------------------
+
+Bowled: the ball hits the stumps and removes a bail, whether or not it first touches the bat or the batter.
+
+Caught: a fielder catches the ball before it bounces, after it has touched the bat or the hand holding the bat.
+
+LBW (leg before wicket): the ball hits the batter's pad or body without touching the bat, and the umpire judges that it would have gone on to hit the stumps, provided it did not pitch outside leg stump and the impact was in line.
+
+Run out: a fielder breaks the wicket with the ball while a batter running between the wickets is short of the crease.
+
+Stumped: the wicketkeeper breaks the wicket while the batter is out of the crease and not attempting a run.
+
+Hit wicket: the batter breaks their own wicket with the bat or body while the ball is in play.
+
+Hit the ball twice: the batter deliberately hits the ball a second time, except to protect the wicket.
+
+Obstructing the field: the batter deliberately obstructs a fielder. Handling the ball is now treated as a form of obstructing the field.
+
+Timed out: the incoming batter fails to be ready to face the ball within the time allowed after a wicket falls.
+
+6. Scoring and milestones
+-------------------------
+
+Runs are scored by running between the wickets or by hitting a boundary. A four is scored when the ball reaches the boundary after touching the ground, and a six when it crosses the boundary without touching the ground first. The team total is the batters' runs plus extras.
+
+A century is 100 runs by one batter in an innings, and a half-century is 50. A duck is a score of zero, and a golden duck is being out on the first ball faced. A maiden over is an over with no runs conceded off the bat. A hat-trick is three wickets by one bowler on three consecutive deliveries, and a five-wicket haul is taking five wickets in one innings.
+
+7. Fielding positions
+---------------------
+
+Slip: close behind the batter on the off side, to catch edges. Gully: a little wider than slip. Point: square of the wicket on the off side. Cover: in front of square on the off side. Mid-off: straight, on the off side, near the bowler.
+
+Mid-on: straight, on the leg side, near the bowler. Mid-wicket: in front of square on the leg side. Square leg: square of the wicket on the leg side. Fine leg: behind square on the leg side, near the boundary. Third man: behind square on the off side, near the boundary.
+
+In every format no more than two fielders may stand behind square on the leg side. The wicketkeeper stands behind the stumps and the bowler's fielding position is next to the pitch after delivering the ball.
+
+8. Fielding restrictions and powerplays
+---------------------------------------
+
+In limited-overs cricket the number of fielders allowed outside the 30-yard circle is limited in the early overs. In an ODI, only two fielders may be outside the circle in overs 1 to 10, four in overs 11 to 40, and five in overs 41 to 50.
+
+In a T20 innings only two fielders may be outside the circle in the first six overs, and five are allowed after that. Test cricket has no powerplay, so the captain can place fielders freely apart from the leg-side rule.
+
+9. Decision Review System
+-------------------------
+
+The Decision Review System (DRS) lets teams challenge an umpire's decision. It uses ball-tracking, edge detection and a thermal or audio check to help the third umpire decide. A team keeps its review if the challenge succeeds and loses one if it fails.
+
+In Test matches each team gets two unsuccessful reviews per innings. In ODIs and T20 Internationals each team gets one unsuccessful review per innings. For LBW decisions, if the tracking shows the ball only just clipping the stumps, the umpire's call stands and the team does not lose the review.
+
+10. Rain, targets and tie-breakers
+----------------------------------
+
+When rain shortens a limited-overs match, a revised target is set using the Duckworth-Lewis-Stern method. It compares the resources each team had, which depend on the overs remaining and the wickets in hand, so a team that loses early wickets is not unfairly treated.
+
+A tied limited-overs match in a knockout game is settled by a Super Over. Each team bats for one over, and an innings ends early if two wickets fall. In a Test match, a team that is behind by at least 200 runs after the first innings of a five-day match can be asked to bat again straight away, which is called the follow-on.
+
+11. Glossary of terms
+---------------------
+
+Yorker: a delivery pitched right at the batter's feet. Bouncer: a short ball that rises towards the batter's head. Googly: a leg spinner's delivery that turns the opposite way, into a right-handed batter. Doosra: an off spinner's delivery that turns away from a right-handed batter.
+
+Swing: sideways movement of the ball in the air. Seam: movement off the pitch when the ball hits the stitched seam. Declaration: the batting captain ends the innings voluntarily. Nightwatchman: a lower-order batter sent in late in the day to protect the better batters. All-rounder: a player who is good at both batting and bowling.
+
+12. Major competitions
+----------------------
+
+The ICC Cricket World Cup is the main ODI tournament and is held every four years. The ICC T20 World Cup is held about every two years. The ICC World Test Championship is played over a two-year cycle, ending in a final between the two top teams.
+
+The Indian Premier League (IPL) is a T20 league played in India, and it has had 10 teams since 2022. The Ashes is the Test series between England and Australia, played since 1882. The Asia Cup is a regional tournament played among Asian teams.
