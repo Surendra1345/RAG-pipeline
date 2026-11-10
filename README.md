@@ -2,7 +2,7 @@
 
  **how a RAG system finds the correct information**. A user asks a question about the loaded documents, and the UI shows every retrieval stage and how well each one performed.
 
-> **Status:** Steps 1 and 2 are done (folder structure; document loading and chunking). Step 3 (retrieval) is done: the embedder, the Postgres/pgvector vector store (95 chunks stored), BM25 keyword search, hybrid fusion (RRF), the cross-encoder reranker, and a search service that returns every stage's ranked list. 51 tests pass. Files marked **Implemented** below contain working code. Everything else is still an **empty placeholder**, and its "Planned contents" describe what it will hold.
+> **Status:** Steps 1 and 2 are done (folder structure; document loading and chunking). Step 3 (retrieval) is done: the embedder, the Postgres/pgvector vector store (95 chunks stored), BM25 keyword search, hybrid fusion (RRF), the cross-encoder reranker, and a search service that returns every stage's ranked list. Step 4 is in progress: the LLM layer is done (Groq with Gemini fallback, query rewriting, cited answers); metrics and the LLM judge are still pending. 63 tests pass. Files marked **Implemented** below contain working code. Everything else is still an **empty placeholder**, and its "Planned contents" describe what it will hold.
 
 ---
 
@@ -160,7 +160,7 @@ npm install
 | 1 | Project scaffold (folders and empty files) | Done |
 | 2 | Document loading and chunking | Done (14 tests pass) |
 | 3 | Embeddings, BM25, hybrid search, reranker | Done (51 tests pass): embedder, Postgres/pgvector store with 95 chunks, BM25, hybrid RRF, reranker, search service. Query rewriting is part of step 4. |
-| 4 | Metrics and LLM judge, with fallback | Pending |
+| 4 | LLM layer, then metrics and judge | LLM layer done (12 tests, no network needed): Groq with Gemini fallback, query rewriting, cited answers. Metrics and LLM judge pending. |
 | 5 | FastAPI endpoints | Pending |
 | 6 | React UI | Pending |
 | 7 | Deployment setup | Pending |
@@ -207,7 +207,7 @@ Creates the FastAPI app, enables CORS for the frontend, registers the routers, a
 #### `app/core/` (app-wide basics)
 | File | Planned contents |
 |---|---|
-| `config.py` | **Implemented.** `Settings` class (pydantic) reading env vars / `backend/.env`. Holds `database_url` (read from `.env`), `documents_dir`, `index_dir`, `embedding_model` (all-MiniLM-L6-v2), `embedding_batch_size` (32), `chunk_size` (500 characters) and `chunk_overlap` (80). The shared `settings` object is imported everywhere. More settings are added in later steps. |
+| `config.py` | **Implemented.** `Settings` class (pydantic) reading env vars / `backend/.env`. Holds `database_url` (read from `.env`), `documents_dir`, `index_dir`, `embedding_model` (all-MiniLM-L6-v2), `embedding_batch_size` (32), `chunk_size` (500 characters) and `chunk_overlap` (80). The shared `settings` object is imported everywhere. Also holds the LLM settings: `groq_api_key`, `gemini_api_key`, `groq_model` (openai/gpt-oss-120b), `gemini_model` (gemini-3.5-flash-lite) and `llm_timeout_s` (30). Keys come only from `backend/.env`. |
 | `logging.py` | Logging setup |
 | `exceptions.py` | **Implemented (partly).** `UnsupportedFileError` (not a TXT/PDF/DOCX file) and `DocumentLoadError` (file recognised but unreadable). HTTP mappings come with the routes in step 5. |
 | `constants.py` | **Implemented (partly).** `EMBEDDING_DIM = 384`, the vector size the database column must match. `RRF_C = 60` (the fusion constant), `DEFAULT_CANDIDATES = 20` (how many each retriever returns and the reranker rescores) and `DEFAULT_TOP_K = 5`. The relevance scale is added with the metrics. |
@@ -217,7 +217,7 @@ Creates the FastAPI app, enables CORS for the frontend, registers the routers, a
 |---|---|
 | `document.py` | **Implemented.** Three models. `Section` (title + text). `RawDocument` (name, real file type, list of sections). `Chunk` (stable `id` like `cricket_guide:3:1`, `doc_name`, `section_title`, `parent_id`, child `text`, full `parent_text`, `chunk_index`). `Chunk.embed_text()` returns "doc > section" plus the text, which is what gets embedded and indexed in step 3. |
 | `search.py` | **Implemented (results part).** `RankedChunk` (chunk, score, 1-based rank, source stage, and `previous_rank` set by the reranker so the UI can show movement), `StageResult` (stage name, ranked chunks, elapsed milliseconds) and `SearchResponse` (the query, k, and one `StageResult` per stage; `.stage(name)` looks one up and `.final` is the last stage's list). The search request model comes with the API in step 5. |
-| `answer.py` | Answer and citation models |
+| `answer.py` | **Implemented.** `Citation` (the `[n]` number, chunk id, document, section, text) and `Answer` (question, rewritten query, answer text, only the cited passages, provider and model used or `None`, LLM milliseconds, and the full `SearchResponse`). |
 | `evaluation.py` | Metric results and calculation-step models |
 
 #### `app/services/` (orchestration)
@@ -226,7 +226,7 @@ Creates the FastAPI app, enables CORS for the frontend, registers the routers, a
 | `document_service.py` | **Implemented.** `load_all_documents(directory)` loads every readable file in the folder and logs and skips bad ones, so one broken file never stops the rest. `load_all_chunks(directory)` loads and chunks everything. Upload/delete come in step 5. |
 | `indexing_service.py` | **Implemented (vector store part).** `index_documents()` loads and chunks the documents, embeds every chunk, makes sure the schema exists, and stores chunks and vectors with `replace_all`. Returns the number of chunks stored. Run it with `python -m app.services.indexing_service`. The BM25 index is added later. |
 | `search_service.py` | **Implemented (without query rewriting).** `SearchService.search(query, k=5, candidates=20, rerank=True)` runs dense search, BM25, RRF fusion and the reranker, times each stage, and returns every stage's ranked list. It builds the BM25 index from the chunks stored in Postgres. Try it: `cd backend && python -m app.services.search_service "your question"` prints the top 5 of each stage, with "(was #n)" showing how far the reranker moved each chunk. |
-| `answer_service.py` | Build the prompt from top chunks and get the cited answer |
+| `answer_service.py` | **Implemented.** `AnswerService.answer(question, k, candidates)`: rewrite the question, run the search with the rewritten query, put the top-k chunks in a numbered prompt, ask the LLM, and keep only the passages the answer cites (`extract_citations` ignores numbers that do not exist). If the LLM answers "I could not find this in the documents." there are no citations. If every provider fails, the answer text says the model is unavailable and the retrieved passages are still returned. Try it: `cd backend && python -m app.services.answer_service "your question"`. |
 | `evaluation_service.py` | Get relevance labels and compute metrics for each stage |
 
 #### `app/ingestion/` (getting text in)
@@ -243,16 +243,16 @@ Creates the FastAPI app, enables CORS for the frontend, registers the routers, a
 | `bm25_index.py` | **Implemented.** `BM25Index(chunks)` builds a BM25 (Okapi) index in memory over each chunk's `embed_text()`, tokenised with `tokenize` (lower-case, stop words dropped). `search(query, k)` returns up to k `(chunk, score)` pairs, best first, leaving out chunks that share no word with the query. It finds exact terms such as "DLS" or "G6" that embeddings can blur. |
 | `hybrid.py` | **Implemented.** `to_ranked(pairs, source)` turns `(chunk, score)` pairs into numbered `RankedChunk`s. `reciprocal_rank_fusion(rankings, c=60, top_n)` merges the dense and BM25 lists: a chunk's score is the sum of `1 / (c + rank)` over the lists it appears in, so a chunk ranked well by both beats one ranked first by only one. Ties break by best rank, then chunk id, so the result is deterministic. |
 | `reranker.py` | **Implemented.** `Reranker.rerank(query, candidates, top_k)` scores each (question, chunk) pair together with the cross-encoder `ms-marco-MiniLM-L-6-v2`, sorts best first, and records each chunk's old position as `previous_rank`. Scores are raw model scores (higher is better, can be negative, not probabilities). `get_reranker()` loads the model once. |
-| `query_rewriter.py` | LLM query rewriting / HyDE |
+| `query_rewriter.py` | **Implemented.** `QueryRewriter.rewrite(question)` asks the LLM for a short search query (fix typos, keep names and numbers). On any failure, no key, an empty reply or an absurdly long one, it returns the original question. The answer prompt still uses the original question. HyDE is not built. |
 
 #### `app/llm/` (LLM access)
 | File | Planned contents |
 |---|---|
-| `base.py` | Common interface every provider follows |
-| `groq_provider.py` | Primary provider |
-| `gemini_provider.py` | Fallback provider |
-| `fallback.py` | Try Groq, switch to Gemini on rate limit or error |
-| `prompts.py` | Prompt templates (rewrite, judge, answer) |
+| `base.py` | **Implemented.** `LLMProvider` protocol (`name`, `available()`, `generate(system, user, temperature, max_tokens)`), `LLMResult` (text, provider, model, elapsed ms) and `LLMError`. |
+| `groq_provider.py` | **Implemented.** `GroqProvider` calls Groq chat completions. Unavailable without `GROQ_API_KEY`. Any network, auth or rate-limit error becomes `LLMError`. No SDK retries, so the fallback switches quickly. |
+| `gemini_provider.py` | **Implemented.** `GeminiProvider` with the same behaviour, using `google-generativeai`. Default model gemini-3.5-flash-lite (tested live). Note the `google-generativeai` package is deprecated; a move to `google-genai` is pending. |
+| `fallback.py` | **Implemented.** `FallbackLLM` tries providers in order, skips ones without a key, moves on after an error, and raises one `LLMError` listing every reason if all fail. `get_llm()` returns a shared instance. |
+| `prompts.py` | **Implemented (rewrite and answer).** `REWRITE_SYSTEM`, `ANSWER_SYSTEM` (answer only from numbered passages, cite as [n], otherwise say it was not found), `build_context` and `build_answer_prompt`. The judge prompt comes with the judge. |
 
 #### `app/evaluation/` (measuring quality)
 | File | Planned contents |
@@ -280,7 +280,8 @@ Creates the FastAPI app, enables CORS for the frontend, registers the routers, a
 | `unit/test_hybrid.py` | **Implemented (8 tests).** The RRF formula; a chunk in both lists beats one first in only one; renumbering and source marking; `top_n`; deterministic ties; an empty list; no lists |
 | `unit/test_reranker.py` | **Implemented (4 tests).** A relevant chunk moves above an irrelevant one; `previous_rank` and source recorded; `top_k`; empty input. Uses the real model |
 | `unit/test_search_service.py` | **Implemented (6 tests).** Needs `DATABASE_URL`. All four stages in order; the leave question finds the leave section; reranked results point back to their fused rank; hybrid rescues "DLS" (dense search puts the DRS chunk first, fusion puts the DLS chunk first); reranking can be switched off; the candidates limit |
-| `unit/test_metrics.py` | Empty until step 4 |
+| `unit/test_llm.py` | **Implemented (12 tests).** Uses fake providers, so it needs no keys or network. Fallback order, skipped providers, all-fail message, Groq without a key, context numbering, rewriter cleanup and fallbacks, citation parsing, answer keeps only cited passages and searches the rewrite, not-found has no citations, LLM down still returns passages |
+| `unit/test_metrics.py` | Empty until the metrics are built |
 
 **Retrieval quality is mixed, and that is expected.** On "What is the DLS method?", BM25 and fusion put the right chunk first, but the reranker moved the DRS chunk above it. On "What is the bonus target for grade G6?", the top reranked chunk straddles the end of the G5 paragraph and the start of G6, so the exact answer sits one chunk lower. Step 4's metrics (precision@k, recall@k, MRR, NDCG@k) exist to measure this properly, per stage, instead of judging by eye.
 

@@ -17,7 +17,9 @@ def load_all_documents(directory: Path = settings.documents_dir) -> list[RawDocu
     docs: list[RawDocument] = []
     for path in list_document_files(directory):
         try:
-            docs.append(load_document(path))
+            doc = load_document(path)
+            docs.append(doc)
+            log.info("Loaded %s as %s: %d sections", path.name, doc.file_type, len(doc.sections))
         except (UnsupportedFileError, DocumentLoadError) as e:
             log.warning("Skipping %s: %s", path.name, e)
     return docs
@@ -25,4 +27,6 @@ def load_all_documents(directory: Path = settings.documents_dir) -> list[RawDocu
 
 def load_all_chunks(directory: Path = settings.documents_dir) -> list[Chunk]:
     """Load and chunk every document in the folder."""
-    return [c for doc in load_all_documents(directory) for c in chunk_document(doc)]
+    chunks = [c for doc in load_all_documents(directory) for c in chunk_document(doc)]
+    log.info("Chunked into %d chunks", len(chunks))
+    return chunks

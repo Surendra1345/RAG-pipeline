@@ -5,6 +5,8 @@ which is fast but coarse. A cross-encoder reads the question and one chunk TOGET
 scores how well the chunk answers it, which is slower but much more precise. We only run
 it on the few candidates the retrievers returned.
 """
+import logging
+import time
 from functools import lru_cache
 
 from sentence_transformers import CrossEncoder
@@ -13,10 +15,15 @@ from app.core.config import settings
 from app.schemas.search import RankedChunk
 
 
+log = logging.getLogger(__name__)
+
+
 class Reranker:
     def __init__(self, model_name: str = settings.reranker_model) -> None:
         self.model_name = model_name
+        start = time.perf_counter()
         self._model = CrossEncoder(model_name)  # downloads weights on first use
+        log.info("Reranker model %s loaded in %.1f s", model_name, time.perf_counter() - start)
 
     def rerank(self, query: str, candidates: list[RankedChunk], top_k: int | None = None) -> list[RankedChunk]:
         """Rescore candidates and return them best first as 'reranked' RankedChunks.
