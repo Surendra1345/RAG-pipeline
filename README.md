@@ -97,6 +97,47 @@ The vector store needs a PostgreSQL database with the pgvector extension. Done o
 4. Copy `backend/.env.example` to `backend/.env` and set `DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/RAG`. A password with special characters must be URL-encoded. `.env` is git-ignored.
 5. Load the data: `cd backend && python -m app.services.indexing_service`. It creates the `chunks` table and HNSW index if needed, then replaces the table's rows with every chunk and its embedding. Re-running does not create duplicates.
 
+**Database schema (the `chunks` table)**
+
+One row per chunk. The chunk text, its parent section and its embedding sit in the same row, so a search returns everything needed without a second lookup. `PgVectorStore.ensure_schema()` creates all of this if it is missing, and is safe to run repeatedly.
+
+| Column | Type | Meaning |
+|---|---|---|
+| `id` | text, primary key | Stable chunk ID: `<doc_stem>:<section>:<chunk>`, for example `cricket_guide:3:1` |
+| `doc_name` | text | File the chunk came from |
+| `section_title` | text | Heading of its section, for example `4. Offside` |
+| `parent_id` | text | `<doc_stem>:<section>`; groups the chunks of one section |
+| `text` | text | The child chunk (at most 500 characters). This is what is embedded and retrieved |
+| `parent_text` | text | The whole section, kept so the LLM can be shown fuller context |
+| `chunk_index` | integer | Position of the chunk inside its section |
+| `embedding` | `vector(384)` | The normalised `all-MiniLM-L6-v2` vector for the chunk |
+
+Indexes: `chunks_pkey` (B-tree on `id`) and `chunks_embedding_hnsw` (HNSW on `embedding` with cosine distance).
+
+A search is one query. `<=>` is pgvector's cosine distance, so `1 - distance` is the cosine similarity (higher is better):
+```sql
+SELECT id, doc_name, section_title, text, 1 - (embedding <=> :query_vector) AS score
+FROM chunks
+ORDER BY embedding <=> :query_vector
+LIMIT :k;
+```
+
+How it behaves:
+- **Loading is all or nothing.** `replace_all` empties the table and inserts every chunk inside one transaction. If anything fails, the table is left as it was. Running it again never creates duplicates.
+- **Exact results at this size.** With 95 rows, `EXPLAIN` shows Postgres doing a sequential scan, so every search compares against every vector and is exact. The HNSW index is approximate (pgvector's default `hnsw.ef_search` is 40) and only starts to matter as the table grows.
+- **Vector size is checked twice.** The code rejects anything that is not 384 numbers wide before writing, and the column type enforces it too.
+- **BM25 is not in the database.** It is built in memory from `all_chunks()` when the search service starts.
+- **Connections.** `DATABASE_URL` comes from `backend/.env`. Each operation opens its own connection; there is no pool yet (planned with the API in step 5).
+- **Size.** About 552 kB for 95 rows including the indexes.
+
+Look at the data yourself in pgAdmin (on the `RAG` database):
+```sql
+SELECT count(*) FROM chunks;                                    -- 95
+SELECT doc_name, count(*) FROM chunks GROUP BY 1 ORDER BY 1;    -- cricket 26, football 24, hr 45
+SELECT id, section_title, left(text, 60), vector_dims(embedding) FROM chunks ORDER BY id LIMIT 10;
+SELECT extname, extversion FROM pg_extension;                   -- includes vector 0.8.7
+```
+
 **Setup commands**
 ```
 # Backend
