@@ -6,16 +6,21 @@ Query rewriting is added in the LLM step. Try it from the backend folder:
 
     python -m app.services.search_service "How many days of annual leave do employees get?"
 """
+import logging
 import sys
 import time
 
 from app.core.constants import DEFAULT_CANDIDATES, DEFAULT_TOP_K
+from app.core.logging import setup_logging
 from app.retrieval.bm25_index import BM25Index
 from app.retrieval.embedder import Embedder, get_embedder
 from app.retrieval.hybrid import reciprocal_rank_fusion, to_ranked
 from app.retrieval.reranker import Reranker, get_reranker
 from app.retrieval.vector_store import PgVectorStore
 from app.schemas.search import RankedChunk, SearchResponse, Stage, StageResult
+
+
+log = logging.getLogger(__name__)
 
 
 class SearchService:
@@ -44,12 +49,16 @@ class SearchService:
         rerank: bool = True,
     ) -> SearchResponse:
         """Return the ranked list of every stage. The last stage is the final answer set."""
+        log.info("Search: %r (k=%d, candidates=%d, rerank=%s)", query, k, candidates, rerank)
         stages: list[StageResult] = []
 
         def timed(stage: Stage, fn) -> list[RankedChunk]:
             start = time.perf_counter()
             results = fn()
-            stages.append(StageResult(stage=stage, results=results, elapsed_ms=(time.perf_counter() - start) * 1000))
+            ms = (time.perf_counter() - start) * 1000
+            stages.append(StageResult(stage=stage, results=results, elapsed_ms=ms))
+            top = results[0].chunk.id if results else "-"
+            log.info("Search stage %-8s %3d results in %6.0f ms, top: %s", stage, len(results), ms, top)
             return results
 
         dense = timed("dense", lambda: to_ranked(self.store.search(self.embedder.embed_query(query), candidates), "dense"))
@@ -72,6 +81,7 @@ def _print(response: SearchResponse, show: int = 5) -> None:
 
 
 if __name__ == "__main__":
+    setup_logging()
     questions = sys.argv[1:] or ["How many days of annual leave do employees get?"]
     service = SearchService()
     for q in questions:

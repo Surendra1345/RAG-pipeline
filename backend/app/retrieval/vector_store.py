@@ -4,6 +4,8 @@ One row per chunk. The `embedding` column holds the 384-number vector. Search us
 cosine distance (`<=>`); vectors are already normalised, so score = 1 - distance is the
 cosine similarity (higher is better).
 """
+import logging
+
 import numpy as np
 import psycopg
 from pgvector.psycopg import register_vector
@@ -12,6 +14,9 @@ from psycopg import sql
 from app.core.config import settings
 from app.core.constants import EMBEDDING_DIM
 from app.schemas.document import Chunk
+
+
+log = logging.getLogger(__name__)
 
 
 class PgVectorStore:
@@ -84,10 +89,12 @@ class PgVectorStore:
             (c.id, c.doc_name, c.section_title, c.parent_id, c.text, c.parent_text, c.chunk_index, v)
             for c, v in zip(chunks, vectors.astype(np.float32))
         ]
+        log.info("Writing %d chunks to table %s", len(rows), self.table)
         with self._connect() as conn:
             conn.execute(sql.SQL("TRUNCATE {}").format(sql.Identifier(self.table)))
             with conn.cursor() as cur:
                 cur.executemany(insert, rows)
+        log.info("Stored %d chunks in table %s", len(rows), self.table)
         return len(rows)
 
     # -- reading ---------------------------------------------------------------
@@ -127,6 +134,7 @@ class PgVectorStore:
         ).format(table=sql.Identifier(self.table))
         with self._connect() as conn:
             rows = conn.execute(stmt, (query, query, k)).fetchall()
+        log.debug("Vector search returned %d rows (k=%d)", len(rows), k)
         return [
             (
                 Chunk(
